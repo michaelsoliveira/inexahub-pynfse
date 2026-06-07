@@ -571,3 +571,12 @@ CTE = {
         "HOMOLOGACAO": "https://homologacao.nfe.",
     },
 }
+
+# NFS-e Padrão Nacional v1.01 (ISS.net / NotaControl)
+# Endpoint único para todos os serviços DPS/NFS-e
+NFSE_NACIONAL = {
+    "ISSNET": {
+        "PRODUCAO": "https://nfse.issnetonline.com.br/wsnfsenacional/nfse.asmx",
+        "HOMOLOGACAO": "https://nfse.issnetonline.com.br/wsnfsenacional/homologacao/nfse.asmx",
+    }
+}

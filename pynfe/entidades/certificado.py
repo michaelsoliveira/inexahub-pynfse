@@ -62,12 +62,15 @@ class CertificadoA1(Certificado):
         if not isinstance(senha, bytes):
             senha = str.encode(senha)
 
-        # Carrega o arquivo .pfx, erro pode ocorrer se a senha estiver errada ou formato invalido.
+        # Carrega o arquivo .pfx; o warning de BER vs DER é inofensivo e suprimido.
+        import warnings
         try:
-            (
-                chave,
-                cert,
-            ) = pkcs12.load_key_and_certificates(cert_conteudo, senha)[:2]
+            with warnings.catch_warnings():
+                warnings.filterwarnings("ignore", category=UserWarning, module="cryptography")
+                (
+                    chave,
+                    cert,
+                ) = pkcs12.load_key_and_certificates(cert_conteudo, senha)[:2]
         except Exception as e:
             if "invalid password" in str(e).lower():
                 raise Exception(

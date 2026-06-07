@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<xs:schema xmlns:xs="http://www.w3.org/2001/XMLSchema"
+  xmlns="http://www.sped.fazenda.gov.br/nfse"
+  xmlns:ds="http://www.w3.org/2000/09/xmldsig#"
+  targetNamespace="http://www.sped.fazenda.gov.br/nfse"
+  elementFormDefault="qualified">
+  <xs:import namespace="http://www.w3.org/2000/09/xmldsig#" schemaLocation="xmldsig-core-schema.xsd"/>
+  <xs:include schemaLocation="tiposSimples_v1.01.xsd"/>
+  <xs:include schemaLocation="tiposComplexos_v1.01.xsd"/>
+  <xs:element name="DPS" type="TCDPS"/>
+</xs:schema>

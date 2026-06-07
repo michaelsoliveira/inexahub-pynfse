@@ -7,6 +7,8 @@
 # Apple OS X
 .DS_Store
 
+.venv/
+
 # Linux
 .*.swp
 

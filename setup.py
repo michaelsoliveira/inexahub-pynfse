@@ -29,19 +29,7 @@ setuptools.setup(
     package_data={
         "pynfe": ["data/**/*.txt"],
     },
-    install_requires=[
-        "pyopenssl>=23.0.0",
-        "requests",
-        "lxml",
-        "signxml",
-    ],
-    extras_require={
-        "nfse": [
-            "suds-community",
-            "PyXB-X==1.2.6.3",
-        ],
-        "impressao": ["brazilfiscalreport[damdfe]"],
-    },
+    # dependencies e extras definidos em pyproject.toml [project]
     zip_safe=False,
     python_requires=">=3.8",
 )

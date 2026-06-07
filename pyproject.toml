@@ -7,7 +7,25 @@ authors = [
 ]
 readme = "README.md"
 requires-python = ">=3.9, <4"
+dependencies = [
+    "pyopenssl>=23.0.0",
+    "requests",
+    "lxml>=5.4.0",
+    "signxml>=4.1.0",
+]
 
+[project.optional-dependencies]
+nfse = [
+    "suds-community",
+    "PyXB-X==1.2.6.3",
+]
+impressao = [
+    "brazilfiscalreport[damdfe]",
+]
+nfse_nacional = [
+    "brazilfiscalreport>=0.7.0",
+    "qrcode[pil]>=7.0",
+]
 
 [build-system]
 requires = ["setuptools>=42"]
