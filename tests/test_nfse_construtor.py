@@ -1,8 +1,6 @@
 import unittest
 from decimal import Decimal
 
-from lxml import etree
-
 from pynfe.processamento.serializacao_nfse_nacional import serializar_dps
 from pynfe.utils.nfse.nacional import NAMESPACE_NFSE_NACIONAL
 from pynfe.utils.nfse.nacional.construtor import construir_dps

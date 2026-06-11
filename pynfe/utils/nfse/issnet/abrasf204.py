@@ -51,7 +51,7 @@ def suporta_abrasf204(ibge: str) -> bool:
 def url_webservice(ibge: str, homologacao: bool = False, ws_url: str | None = None) -> str:
     """URL do webservice ABRASF 2.04 por IBGE ou override explícito."""
     if (ws_url or "").strip():
-        return ws_url.strip().rstrip("?WSDL").rstrip("?wsdl")
+        return str(ws_url or "").strip().rstrip("?WSDL").rstrip("?wsdl") or ""
     cfg = params_municipio(ibge)
     if cfg:
         return cfg["ws_homologacao"] if homologacao else cfg["ws_producao"]

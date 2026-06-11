@@ -8,9 +8,13 @@
 #
 # Métodos: RecepcionarLoteRps, ConsultarLoteRps, ConsultarNfsePorRps, CancelarNfse
 
+from __future__ import annotations
+
 import re
 import requests
-from lxml import etree
+from typing import Any, cast
+
+import lxml.etree as etree
 
 from pynfe.entidades.certificado import CertificadoA1
 from pynfe.processamento.assinatura import AssinaturaA1
@@ -119,8 +123,8 @@ class ComunicacaoISSNetMunicipal:
         self,
         lista_rps: list,
         numero_lote: str = "1",
-        emitente_cnpj_cpf: str = None,
-        emitente_im: str = None,
+        emitente_cnpj_cpf: str | None = None,
+        emitente_im: str | None = None,
     ) -> requests.Response:
         """
         Envia um lote de RPS de forma síncrona.
@@ -162,8 +166,8 @@ class ComunicacaoISSNetMunicipal:
         self,
         lista_rps: list,
         numero_lote: str = "1",
-        emitente_cnpj_cpf: str = None,
-        emitente_im: str = None,
+        emitente_cnpj_cpf: str | None = None,
+        emitente_im: str | None = None,
     ) -> requests.Response:
         """Envia lote de forma assíncrona. Retorna protocolo para consulta posterior."""
         if not lista_rps:
@@ -257,7 +261,7 @@ class ComunicacaoISSNetMunicipal:
         id_rps = _sub(raiz, "IdentificacaoRps")
         _sub(id_rps, "Numero", numero_rps)
         _sub(id_rps, "Serie", serie_rps)
-        _sub(id_rps, "Tipo", tipo_rps)
+        _sub(id_rps, "Tipo", str(tipo_rps))
 
         prest = _sub(raiz, "Prestador")
         _cpf_cnpj_element(prest, emitente_cnpj_cpf)
@@ -321,7 +325,7 @@ class ComunicacaoISSNetMunicipal:
             c14n_algorithm="http://www.w3.org/TR/2001/REC-xml-c14n-20010315",
         )
         signer.excise_empty_xmlns_declarations = True
-        signer.namespaces = {None: signer.namespaces["ds"]}
+        signer.namespaces = cast(dict[str, Any], {None: signer.namespaces["ds"]})
 
         signed = signer.sign(
             elemento,
@@ -528,7 +532,7 @@ class ComunicacaoISSNetMunicipal:
         _log = __import__("logging").getLogger(__name__)
 
         try:
-            from curl_cffi import requests as curl_requests
+            from curl_cffi import requests as curl_requests  # type: ignore[import-untyped]
 
             return curl_requests.post(
                 url,

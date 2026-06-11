@@ -5,9 +5,9 @@ from __future__ import annotations
 
 import datetime
 from decimal import Decimal
-from typing import Optional
+from typing import Any, Optional
 
-from lxml import etree
+import lxml.etree as etree
 
 from pynfe.entidades.dps import DPS, LoteDPS
 from pynfe.utils.nfse.nacional import (
@@ -16,6 +16,7 @@ from pynfe.utils.nfse.nacional import (
     VERSAO_NFSE_NACIONAL,
 )
 from pynfe.utils.nfse.nacional.id_dps import (
+    IdDpsModo,
     format_n_dps_id_nacional,
     format_n_dps_portal,
     format_serie_elemento_portal,
@@ -34,7 +35,7 @@ _NBS_POR_TRIB_NAC = {
 }
 
 
-def _tag(pai: etree._Element, local: str, texto=None) -> etree._Element:
+def _tag(pai: etree._Element, local: str, texto: Any | None = None) -> etree._Element:
     el = etree.SubElement(pai, "{%s}%s" % (NS, local))
     if texto is not None:
         el.text = str(texto)
@@ -63,7 +64,9 @@ def _c_trib_mun_from_nacional(cod_nacional: str) -> Optional[str]:
     return derived[-3:]
 
 
-def _normalizar_cod_trib_municipal(cod_nacional: str, cod_municipal: str = None) -> Optional[str]:
+def _normalizar_cod_trib_municipal(
+    cod_nacional: str, cod_municipal: str | None = None
+) -> Optional[str]:
     """TCCodTribMun — exatamente 3 dígitos numéricos."""
     digits = "".join(c for c in str(cod_municipal or "") if c.isdigit())
     if len(digits) == 3:
@@ -75,7 +78,7 @@ def _normalizar_cod_trib_municipal(cod_nacional: str, cod_municipal: str = None)
     return _c_trib_mun_from_nacional(cod_nacional)
 
 
-def _format_c_trib_mun(cod_nacional: str, cod_municipal: str = None) -> str:
+def _format_c_trib_mun(cod_nacional: str, cod_municipal: str | None = None) -> str:
     """cTribMun layout ISS.net validado: 6 dígitos (mesmo formato de cTribNac)."""
     mun_digits = "".join(c for c in str(cod_municipal or "") if c.isdigit())
     if len(mun_digits) == 6:
@@ -91,7 +94,7 @@ def _format_c_trib_mun_issnet(cod_nacional: str, cod_municipal: str, cod_ibge: s
     return f"{ibge}{mun}"
 
 
-def _resolver_cod_nbs(cod_trib_nac: str, cod_nbs: str = None) -> str:
+def _resolver_cod_nbs(cod_trib_nac: str, cod_nbs: str | None = None) -> str:
     if cod_nbs:
         return "".join(c for c in str(cod_nbs) if c.isdigit())[:9]
     nac = "".join(c for c in str(cod_trib_nac or "") if c.isdigit()).zfill(6)[-6:]
@@ -159,6 +162,8 @@ def _dh_emi_str(dps: DPS) -> str:
 
 def _data_competencia_str(dps: DPS) -> str:
     dc = dps.data_competencia
+    if dc is None:
+        return datetime.datetime.now().strftime("%Y-%m-%d")
     if hasattr(dc, "strftime"):
         return dc.strftime("%Y-%m-%d")
     return str(dc)
@@ -267,10 +272,13 @@ def _serializar_ibscbs(pai, dps: DPS) -> None:
     modo = getattr(dps, "ibscbs_modo", "minimo") or "minimo"
     if dps.incluir_ibscbs and modo == "completo" and toma and int(dps.ambiente or 2) == 1:
         dest_el = _tag(ibscbs_el, "dest")
-        if toma.cnpj:
-            _tag(dest_el, "CNPJ", "".join(c for c in toma.cnpj if c.isdigit()).zfill(14)[-14:])
-        elif toma.cpf:
-            _tag(dest_el, "CPF", "".join(c for c in toma.cpf if c.isdigit()).zfill(11)[-11:])
+        doc_digits = "".join(
+            c for c in str(getattr(toma, "cnpj", "") or getattr(toma, "cpf", "") or "") if c.isdigit()
+        )
+        if len(doc_digits) >= 14:
+            _tag(dest_el, "CNPJ", doc_digits.zfill(14)[-14:])
+        elif len(doc_digits) >= 11:
+            _tag(dest_el, "CPF", doc_digits.zfill(11)[-11:])
         if toma.razao_social:
             _tag(dest_el, "xNome", toma.razao_social[:150])
 
@@ -285,7 +293,8 @@ def resolver_id_dps(dps: DPS) -> str:
     """Retorna o atributo Id (TSIdDPS, 45 chars) para uma entidade DPS."""
     prest = dps.prestador
     tp_inscr, inscr = _doc_prestador(prest)
-    id_modo = getattr(dps, "id_dps_modo", "issnet_portal") or "issnet_portal"
+    raw_modo = getattr(dps, "id_dps_modo", "issnet_portal") or "issnet_portal"
+    id_modo: IdDpsModo = "nacional_padrao" if raw_modo == "nacional_padrao" else "issnet_portal"
     return gerar_id_dps(
         dps.cod_municipio_emissao,
         tp_inscr,
@@ -420,9 +429,9 @@ def serializar_consultar_nfse_por_dps(
 def serializar_consultar_nfse_servico_prestado(
     prestador_doc: str,
     prestador_im: str,
-    numero_nfse: str = None,
-    data_inicial: str = None,
-    data_final: str = None,
+    numero_nfse: str | None = None,
+    data_inicial: str | None = None,
+    data_final: str | None = None,
     pagina: int = 1,
     usar_cpf: bool = False,
 ) -> etree._Element:
@@ -459,9 +468,9 @@ def serializar_consultar_dps_disponivel(
 def serializar_consultar_url_nfse(
     prestador_doc: str,
     prestador_im: str,
-    numero_nfse: str = None,
-    data_inicial: str = None,
-    data_final: str = None,
+    numero_nfse: str | None = None,
+    data_inicial: str | None = None,
+    data_final: str | None = None,
     pagina: int = 1,
     usar_cpf: bool = False,
 ) -> etree._Element:

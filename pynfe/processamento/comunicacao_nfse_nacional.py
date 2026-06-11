@@ -8,11 +8,13 @@
 # Todos os serviços usam o mesmo endpoint WSDL.
 # O método SOAP é determinado pela tag raiz do XML enviado.
 
+from __future__ import annotations
+
 import datetime
 import logging
 import re
 import requests
-from lxml import etree
+import lxml.etree as etree
 
 from pynfe.entidades.certificado import CertificadoA1
 from pynfe.utils.nfse.nacional import (
@@ -249,9 +251,9 @@ class ComunicacaoNFSeNacional:
         self,
         prestador_doc: str,
         prestador_im: str,
-        numero_nfse: str = None,
-        data_inicial: str = None,
-        data_final: str = None,
+        numero_nfse: str | None = None,
+        data_inicial: str | None = None,
+        data_final: str | None = None,
         pagina: int = 1,
         usar_cpf: bool = False,
     ) -> requests.Response:
@@ -326,9 +328,9 @@ class ComunicacaoNFSeNacional:
         self,
         prestador_doc: str,
         prestador_im: str,
-        numero_nfse: str = None,
-        data_inicial: str = None,
-        data_final: str = None,
+        numero_nfse: str | None = None,
+        data_inicial: str | None = None,
+        data_final: str | None = None,
         pagina: int = 1,
         usar_cpf: bool = False,
     ) -> requests.Response:
@@ -349,7 +351,7 @@ class ComunicacaoNFSeNacional:
 
     def _preparar_lote(self, lote: LoteDPS, sincrono: bool) -> etree._Element:
         """Serializa, assina DPS individuais e assina o lote."""
-        dps_xmls = [serializar_dps(dps) for dps in lote.lista_dps]
+        dps_xmls = [serializar_dps(dps) for dps in (lote.lista_dps or [])]
         fn_lote = serializar_lote_sincrono if sincrono else serializar_lote_assincrono
         return self._assinador.preparar_lote_assinado(lote, dps_xmls, fn_lote)
 
@@ -456,7 +458,7 @@ class ComunicacaoNFSeNacional:
     ) -> requests.Response:
         """POST SOAP com mTLS; curl_cffi quando disponível (ISSNet/WAF)."""
         try:
-            from curl_cffi import requests as curl_requests
+            from curl_cffi import requests as curl_requests  # type: ignore[import-untyped]
 
             return curl_requests.post(
                 url,
